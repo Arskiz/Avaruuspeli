@@ -1,2 +1,2 @@
 # Avaruuspeli
- avaruuspeli
+ Avaruuspeli
