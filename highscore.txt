@@ -1,1 +1,0 @@
-{"Highscore": 888, "Highest Level": 3, "Enemies Killed": 6, "Damage Done": 888}

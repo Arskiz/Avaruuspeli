@@ -47,7 +47,7 @@ UPPER_BORDER = game.Rect(0, 0, WIDTH, BORDERTHICKNESS)
 DOWN_BORDER = game.Rect(0, HEIGHT - BORDERTHICKNESS, WIDTH, BORDERTHICKNESS)
 
 # FPS
-FPS = math.inf
+FPS = 60
 showCounter = True
 
 # -- Aseen parametrit --|
@@ -108,10 +108,10 @@ data = {
     'Damage Done' : damageDone
 }
 
-# Yritä avata highscore.txt - tiedosto
+# Yritä avata save.txt - tiedosto
 try:
-    with open('highscore.txt') as highscore_file:
-        data = json.load(highscore_file)
+    with open('save.txt') as save_file:
+        data = json.load(save_file)
 
 # Jos ei onnistu, printtaa "No save file found, ignoring..."
 except:
@@ -150,17 +150,36 @@ BLUE_BULLET = game.transform.rotate(game.transform.scale(
     BLUE_BULLET_IMG, (BULLET_WIDTH, BULLET_HEIGHT)), 0)
 
 # Nappien leveys ja pituus arvot
-PLAY_BUTTON_WIDTH, PLAY_BUTTON_HEIGHT = 200, 80
-EXIT_BUTTON_WIDTH, EXIT_BUTTON_HEIGHT = 200, 80
+MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT = 200, 80
 ITEM_BUTTON_WIDTH, ITEM_BUTTON_HEIGHT = 100, 100
 
-# Nappien kuvat
+# Main-Menu nappien kuvat
 PLAY_BUTTON = game.image.load(os.path.join('Assets/UI', 'play.png'))
-PLAY  = game.transform.rotate(game.transform.scale(PLAY_BUTTON, (PLAY_BUTTON_WIDTH, PLAY_BUTTON_HEIGHT)), 0)
+PLAY  = game.transform.rotate(game.transform.scale(PLAY_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+SETTINGS_BUTTON = game.image.load(os.path.join('Assets/UI', 'settings.png'))
+SETTINGS  = game.transform.rotate(game.transform.scale(SETTINGS_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
 
 EXIT_BUTTON = game.image.load(os.path.join('Assets/UI', 'exit.png')) 
-EXIT  = game.transform.rotate(game.transform.scale(EXIT_BUTTON, (EXIT_BUTTON_WIDTH, EXIT_BUTTON_HEIGHT)), 0)
+EXIT  = game.transform.rotate(game.transform.scale(EXIT_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
 
+DELETE_BUTTON = game.image.load(os.path.join('Assets/UI', 'delete.png')) 
+DELETE  = game.transform.rotate(game.transform.scale(DELETE_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+# Settings-Menu nappien kuvat
+MUSIC_BUTTON = game.image.load(os.path.join('Assets/UI', 'music_toggle.png'))
+MUSIC  = game.transform.rotate(game.transform.scale(MUSIC_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+FPS_TOGGLE_BUTTON = game.image.load(os.path.join('Assets/UI', 'fps_toggle.png'))
+FPSS  = game.transform.rotate(game.transform.scale(FPS_TOGGLE_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+BACK_BUTTON = game.image.load(os.path.join('Assets/UI', 'back.png')) 
+BACK  = game.transform.rotate(game.transform.scale(BACK_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+FPS_BG_BUTTON = game.image.load(os.path.join('Assets/UI', 'fps_bg_toggle.png')) 
+FPS_BG_BTN  = game.transform.rotate(game.transform.scale(FPS_BG_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
+# Item-nappien kuvat
 ITEM1_BUTTON = game.image.load(os.path.join('Assets/UI', '1.png')) 
 ITEM1  = game.transform.rotate(game.transform.scale(ITEM1_BUTTON, (ITEM_BUTTON_WIDTH, ITEM_BUTTON_HEIGHT)), 0)
 
@@ -482,21 +501,24 @@ def save_score():
     currentKills = data["Enemies Killed"]
     currentDamage = data["Damage Done"]
 
-    # Katsoo jos arvot on isompia kuin tiedostossa olevat arvot
+    # Katsoo jos muuttujien arvot on isompia kuin save-tiedostossa olevat arvot
     if currentScore < score:
         data['Highscore'] = score
+
     if currentLevel < level:
-        data['Highest Level'] = level
+        data["Highest Level"] = level
+
     if currentKills < enemiesKilled:
-        data['Enemies Killed'] = enemiesKilled
+        data["Enemies Killed"] = enemiesKilled
+
     if currentDamage < damageDone:
-        data['Damage Done'] = damageDone
+        data["Damage Done"] = damageDone
 
-    # Tallenna tiedot tiedostoon "highscore.txt"
-    with open('highscore.txt','w') as highscore_file:
+    # Tallenna tiedot tiedostoon "save.txt"
+    with open('save.txt','w') as save_file:
 
-        # Käytä jsonia ja kirjoita highscore_file-tiedostoon data
-        json.dump(data, highscore_file)
+        # Käytä jsonia ja kirjoita save_file-tiedostoon data
+        json.dump(data, save_file)
     
 class Button():
 
@@ -981,7 +1003,7 @@ def Enemy_Reload_Weapon():
             nykyinenLipas = 0
 
 
-#fps:n taustakuva
+# Fps:n taustakuva
 def FPS_BG():
     global textBGColor
     if (textBGColor == True):
@@ -989,13 +1011,21 @@ def FPS_BG():
     else:
         textBGColor = True
 
-#fps päällä vai ei
+# Fps päällä vai ei
 def FPS_Toggle():
     global showCounter
     if (showCounter == True):
         showCounter = False
     else:
         showCounter = True
+
+# Musiikki päällä vai ei
+def MUSIC_TOGGLE():
+    global music
+    if(music):
+        music = False
+    else:
+        music = True
 
 # Ammu-funktio pelaajalle
 def player_shoot(player):
@@ -1220,10 +1250,7 @@ def main():
 
                 # jos painetaan "M" nappia, musiikki menee pois päältä tai päälle riippuen sen statuksesta
                 if (event.key == game.K_m):
-                    if(music):
-                        music = False
-                    else:
-                        music = True
+                    MUSIC_TOGGLE()
                     
 
         # saa lista kaikista näppäimistön näppäimistä joita painetaan pohjassa
@@ -1253,12 +1280,14 @@ def main():
 
 # Kuolema näkymä
 def death_screen():
+    Button_Space = 10
+    title_label_text = "Kuolit noob"
     title_font = game.font.SysFont("comicsans", 50)
     play_audio("Death.mp3", 1)
     run = True
     while run:
         WIN.blit(DEATH_BACKGROUND, (0,0))
-        title_label = title_font.render('Kuolit noob', 1, GREEN)
+        title_label = title_font.render(title_label_text, 1, GREEN)
 
         # Jos "Enemies Killed" muuttuja data-taulukossa on pienempi kuin nykyisen pelin tapetut viholliset, kerro että uusi ennätys on tehty.
         if enemiesKilled > data["Enemies Killed"]:
@@ -1305,13 +1334,31 @@ def death_screen():
         # Piirrä "paina m laittaaksesi musiikin pois päältä" teksti
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
         
-        # piirrä Poistu pelistä (exit)-nappi
-        exit = Button((WIDTH / 2 - (PLAY.get_width() / 2)), (HEIGHT / 2 + 30), EXIT)
+        # Piirrä Poistu pelistä (exit)-nappi
+        exit = Button((WIDTH / 2 - (EXIT.get_width())), (HEIGHT / 2 + 30), EXIT)
+
+        # Piirrä Poista Save (highscore jne..)-nappi
+        delete = Button((WIDTH / 2  + Button_Space), (HEIGHT / 2 + 30), DELETE)
 
         # Jos exit-nappia painaa, niin tallenna score tiedostoon.
         if exit.draw():
-            save_score()
+
+            # Yritä avata save.txt - tiedosto
+            if os.path.exists("save.txt"):
+                save_score()
+                title_label_text = "Save Tallennettu!"
+            else:
+                title_label_text = "Ei voitu tallentaa savea (The file does not exist)"
             game.quit()
+        
+        # Jos delete-nappia painaa, niin poista score tiedosto.
+        if delete.draw():
+            # Yritä avata save.txt - tiedosto
+            if os.path.exists("save.txt"):
+                os.remove("save.txt")
+                title_label_text = "Save Poistettu!"
+            else:
+                title_label_text = "Ei voitu poistaa savea (The file does not exist)"
 
         # Päivitä ikkuna
         game.display.update()
@@ -1326,7 +1373,7 @@ def death_screen():
 
 # Päävalikko
 def main_menu():
-    
+    Button_Space = 10
     # Määritä Title-tekstin fontti Main-Menuun
     title_font = game.font.SysFont("comicsans", 50)
 
@@ -1340,15 +1387,15 @@ def main_menu():
         WIN.blit(BACKGROUND, (0,0))
 
         # Määritä titlen teksti
-        title_label = title_font.render('Paina "Play" aloittaaksesi...', 1, (0,0,0))
+        title_label = title_font.render('Paina "Play" aloittaaksesi...', 1, CYAN)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
 
         # Katso löytyykö save-tiedostoa, ja jos löytyy niin kirjoita "Save Tiedosto Löytyi!" ja jos ei löydy, niin kirjoita "Save Tiedostoa ei löytynyt."
         try:
-            with open('highscore.txt') as highscore_file:
-                json.load(highscore_file)
+            with open('save.txt') as save_file:
+                json.load(save_file)
                 save_file_exists = title_font.render("Save Tiedosto Löytyi!",1, GREEN)
         except:
            save_file_exists = title_font.render("Save Tiedostoa ei löytynyt.",1, RED)
@@ -1357,13 +1404,16 @@ def main_menu():
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
 
         # Piirrä Save-tiedosto:n status teksti
-        WIN.blit(save_file_exists, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 + 100))
+        WIN.blit(save_file_exists, (WIDTH/2 - save_file_exists.get_width()/2, HEIGHT / 2 + 110))
 
         # Piirrä play-nappi
-        play = Button((WIDTH / 2 - PLAY.get_width() - 10), (HEIGHT / 2 + 30), PLAY)
+        settings = Button((WIDTH / 2 - SETTINGS.get_width() * 1.5 - Button_Space), (HEIGHT / 2 + 30), SETTINGS)
+
+        # Piirrä settings-nappi
+        play = Button((WIDTH / 2 - PLAY.get_width() / 2), (HEIGHT / 2 + 30), PLAY)
 
         # Piirrä exit-nappi
-        exit = Button((WIDTH / 2), (HEIGHT / 2 + 30), EXIT)
+        exit = Button((WIDTH / 2 + EXIT.get_width() / 2 + Button_Space), (HEIGHT / 2 + 30), EXIT)
         
         # Jos play-nappia painetaan:
         if play.draw():
@@ -1372,6 +1422,73 @@ def main_menu():
         # Jos exit-nappia painetaan:
         if exit.draw():
             game.quit()
+
+        # Jos settings-nappia painetaan:
+        if settings.draw():
+            settings_menu()
+
+        # Päivitä ikkuna
+        game.display.update()
+
+        # Saa kaikki eventit
+        for event in game.event.get():
+            
+            # Jos eventti on game.QUIT, sulje loop
+            if(event.type == game.QUIT):
+                run = False
+    # Poistu pelistä
+    game.quit()
+
+# Asetukset
+def settings_menu():
+    Button_Space = 10
+    # Määritä Title-tekstin fontti Main-Menuun
+    title_font = game.font.SysFont("comicsans", 50)
+
+    run = True
+    
+    # Kun run on päällä-looppi
+    while run:
+        # Piirrä taustakuva
+        WIN.blit(BACKGROUND, (0,0))
+
+        # Määritä titlen teksti
+        title_label = title_font.render('ASETUKSET:', 1, CYAN)
+
+        # Piirrä title
+        WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
+
+        
+        # Piirrä "Paina M laittaaksesi musiikin pois päältä ja päälle pelissä"- teksti
+        WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
+
+        # Piirrä settings-nappi
+        Music = Button((WIDTH / 2 - MUSIC.get_width() * 1.5 - Button_Space), (HEIGHT / 2 + 30), MUSIC)
+
+        # Piirrä play-nappi
+        Fps_Bg = Button((WIDTH / 2 - FPS_BG_BTN.get_width() / 2), (HEIGHT / 2 + 30), FPS_BG_BTN)
+
+        # Piirrä takaisin-nappi
+        Back_Bg = Button((WIDTH / 2 - BACK.get_width() / 2), (HEIGHT / 2 + 130), BACK)
+
+        # Piirrä exit-nappi
+        Fps = Button((WIDTH / 2 + FPSS.get_width() / 2 + Button_Space), (HEIGHT / 2 + 30), FPSS)
+        
+        # Jos Musiikki-nappia painetaan:
+        if Music.draw():
+            MUSIC_TOGGLE()
+        
+        # Jos Fps-BG-nappia painetaan:
+        if Fps_Bg.draw():
+            FPS_BG()
+
+        # Jos Takaisin-nappia painetaan:
+        if Back_Bg.draw():
+            main_menu()
+
+        # Jos Fps-toggle-nappia painetaan:
+        if Fps.draw():
+            FPS_Toggle()
 
         # Päivitä ikkuna
         game.display.update()
