@@ -1,12 +1,9 @@
-from operator import le
-from tracemalloc import start
-from unittest import mock
 import pygame as game
 import os
 import sys
 import random as r
-import asyncio as sync
 import datetime as d;
+import math
 import json
 objektit = []
 objektit2 = []
@@ -50,7 +47,7 @@ UPPER_BORDER = game.Rect(0, 0, WIDTH, BORDERTHICKNESS)
 DOWN_BORDER = game.Rect(0, HEIGHT - BORDERTHICKNESS, WIDTH, BORDERTHICKNESS)
 
 # FPS
-FPS = 60
+FPS = math.inf
 showCounter = True
 
 # -- Aseen parametrit --|
@@ -103,7 +100,7 @@ atRight = False
 leftMovement = False
 rightMovement = False
 
-# tallenna json-tiedostona nämä variablet
+# Tallenna json-tiedostona nämä variablet
 data = {
     'Highscore' : score,
     'Highest Level' : level,
