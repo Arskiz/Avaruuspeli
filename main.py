@@ -109,14 +109,14 @@ data = {
     'Damage Done' : damageDone
 }
 
+
+
 # Yritä avata save.txt - tiedosto
 try:
-    with open('save.txt','w') as save_file:
+    with open('save.txt') as save_file:
         data = json.load(save_file)
-
-# Jos ei onnistu, printtaa "No save file found, ignoring..."
 except:
-    print("No save file found, ignoring...")
+    print("Ei löytynyt savea.")
 
 
 # Pelaajan Rectangle
@@ -519,7 +519,7 @@ def save_score():
     if currentDamage < damageDone:
         data["Damage Done"] = damageDone
 
-    # Tallenna tiedot tiedostoon 'Assets/Save/save.txt'
+    # Tallenna tiedot tiedostoon 'save.txt'
     with open('save.txt','w') as save_file:
 
         # Käytä jsonia ja kirjoita save_file-tiedostoon data
@@ -1391,20 +1391,19 @@ def death_screen():
         # Jos exit-nappia painaa, niin tallenna score tiedostoon.
         if exit.draw():
             # Yritä avata save.txt - tiedosto
-            if os.path.exists("save.txt"):
-                save_score()
-                title_label_text = "Save Tallennettu!"
-            else:
-                title_label_text = "Ei voitu tallentaa savea (Could not load the file, [ !MISSING!] )"
+            save_score()
+            title_label_text = "Tallennettu."
             game.quit()
         
         # Jos delete-nappia painaa, niin poista score tiedosto.
         if delete.draw():
+            # Yritä avata save.txt - tiedosto
             if os.path.exists("save.txt"):
                 os.remove("save.txt")
-                title_label_text = "Save Tallennettu!"
+                title_label_text = "Save Poistettu!"
             else:
-                title_label_text = "Ei voitu tallentaa savea (The file does not exist)"
+                title_label_text = "Ei voitu poistaa savea (The file does not exist)"
+
         
         # Päivitä ikkuna
         game.display.update()
@@ -1437,23 +1436,11 @@ def main_menu():
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
-
-        # Katso löytyykö save-tiedostoa, ja jos löytyy niin kirjoita "Save Tiedosto Löytyi!" ja jos ei löydy, niin kirjoita "Save Tiedostoa ei löytynyt."
-        try:
-            print("Katsotaan löytyykö...")
-            with open('save.txt') as save_file:
-                json.load(save_file)
-                
-                save_file_exists = title_font.render("Save Tiedosto Löytyi!",1, GREEN)
-        except:
-            print("EI LÖYTYNYT!")
-            save_file_exists = title_font.render("Save Tiedostoa ei löytynyt.",1, RED)
         
         # Piirrä "Paina M laittaaksesi musiikin pois päältä ja päälle pelissä"- teksti
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
 
-        # Piirrä Save-tiedosto:n status teksti
-        WIN.blit(save_file_exists, (WIDTH/2 - save_file_exists.get_width()/2, HEIGHT / 2 + 110))
+    
 
         # Piirrä play-nappi
         settings = Button((WIDTH / 2 - SETTINGS.get_width() * 1.5 - Button_Space), (HEIGHT / 2 + 30), SETTINGS)
