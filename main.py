@@ -3,7 +3,6 @@ import os
 import sys
 import random as r
 import datetime as d;
-import math
 import json
 objektit = []
 objektit2 = []
@@ -19,6 +18,8 @@ counter, text = 2, ' '.rjust(3)
 
 score = 0
 level = 0
+
+
 
 
 
@@ -761,6 +762,23 @@ def game_window(player):
     # Päivitä räjähdys
     explosion_group.update()
 
+    # Tee Item-napit
+    Item1 = Button(WIDTH/2 - ITEM1.get_width()/2 - 150, 0, ITEM1)
+    Item2 = Button(WIDTH/2 - ITEM1.get_width()/2,  0, ITEM2)
+    Item3 = Button(WIDTH/2 - ITEM1.get_width()/2 + 150, 0, ITEM3)
+
+    # Jos item1 - nappia painetaan, aseta aseeksi 1
+    if Item1.draw():
+        gun = 1
+
+    # Jos item2 - nappia painetaan, aseta aseeksi 2
+    if Item2.draw():
+        gun = 2
+
+    # Jos item4 - nappia painetaan, aseta aseeksi 3
+    if Item3.draw():
+        gun = 3
+
     # Piirrä reload teksti
     WIN.blit(reloadfont.render(text, True, WHITE), (WIDTH / 2, HEIGHT / 2))
 
@@ -1055,7 +1073,7 @@ def pause_menu():
         WIN.blit(BACKGROUND, (0,0))
 
         # Määritä title:n teksti
-        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, (0,0,0))
+        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, CYAN)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1075,22 +1093,6 @@ def pause_menu():
         if exit.draw():
             game.quit()
 
-        #Määritä Item-nappulat
-        Item1 = Button(WIDTH/2 - ITEM1.get_width()/2 - 150, 0, ITEM1)
-        Item2 = Button(WIDTH/2 - ITEM1.get_width()/2,  0, ITEM2)
-        Item3 = Button(WIDTH/2 - ITEM1.get_width()/2 + 150, 0, ITEM3)
-
-        # Jos item1 - nappia painetaan, aseta aseeksi 1
-        if Item1.draw():
-            gun = 1
-
-        # Jos item2 - nappia painetaan, aseta aseeksi 2
-        if Item2.draw():
-            gun = 2
-
-        # Jos item4 - nappia painetaan, aseta aseeksi 3
-        if Item3.draw():
-            gun = 3
 
         # Päivitä ikkuna
         game.display.update()
@@ -1166,7 +1168,10 @@ def main():
         # Päivitä FPS:n verran
         clock.tick(FPS)
 
-        #laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
+
+
+
+        # Laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
         if(nykyinenLipas < 0):
             nykyinenLipas = 0
         if(nykyinenAmmo < 0):
@@ -1342,10 +1347,10 @@ def death_screen():
 
         # Jos exit-nappia painaa, niin tallenna score tiedostoon.
         if exit.draw():
-
             # Yritä avata save.txt - tiedosto
             if os.path.exists("save.txt"):
                 save_score()
+                os.remove("save.txt")
                 title_label_text = "Save Tallennettu!"
             else:
                 title_label_text = "Ei voitu tallentaa savea (The file does not exist)"

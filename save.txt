@@ -1,1 +1,0 @@
-{"Highscore": 0, "Highest Level": 0, "Enemies Killed": 0, "Damage Done": 0}
