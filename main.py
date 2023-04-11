@@ -1397,13 +1397,11 @@ def death_screen():
         
         # Jos delete-nappia painaa, niin poista score tiedosto.
         if delete.draw():
-            # Yritä avata save.txt - tiedosto
-            if os.path.exists("save.txt"):
+            try:
                 os.remove("save.txt")
                 title_label_text = "Save Poistettu!"
-            else:
-                title_label_text = "Ei voitu poistaa savea (The file does not exist)"
-
+            except:
+                print("Error")
         
         # Päivitä ikkuna
         game.display.update()
