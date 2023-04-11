@@ -20,8 +20,8 @@ score = 0
 level = 0
 
 
-
-
+HackStatus = False
+godMode = False
 
 
 
@@ -111,7 +111,7 @@ data = {
 
 # Yritä avata save.txt - tiedosto
 try:
-    with open('save.txt') as save_file:
+    with open('save.txt','w') as save_file:
         data = json.load(save_file)
 
 # Jos ei onnistu, printtaa "No save file found, ignoring..."
@@ -286,7 +286,8 @@ class Ship:
                     play_audio("hitHurt.wav", 2) # Soitetaan ääniefekti
                 else:
                     play_audio("laserShoot.wav", 2) # Soitetaan ääniefekti
-                nykyinenAmmo -=gun # Vähennetään pelaajan aseeseen käytettyjen ammusten määrä "nykyinenAmmo"-muuttujasta
+                if not infiniteAmmo:
+                    nykyinenAmmo -=gun # Vähennetään pelaajan aseeseen käytettyjen ammusten määrä "nykyinenAmmo"-muuttujasta
             self.firerate_player = 1 # Asetetaan cooldown-tila "1"-arvoon
 
     # vihollisen ammunta-funktio
@@ -451,16 +452,19 @@ class Enemy(Ship):
                 # Käy läpi kaikki viholliset ja tarkistaa, onko luoti osunut johonkin niistä
                 for obj in objs:
                     global nykyinenHealth
+                    global godMode
                     # Jos luoti osuu pelaajaan
                     if objekti.collision(obj):
 
                         # Jos pelaajalla on elämää jäljellä enemmän kuin yksi, vähennetään sitä yhdellä ja poistetaan luoti
                         if (obj.health > 1):
-                            obj.health -= 1
+                            if(godMode != True):
+                                obj.health -= 1
 
                             # Jos nykyinen elämä on isompi kuin 0, poista yksi
                             if(nykyinenHealth > 0):
-                                nykyinenHealth -= 1
+                                if(godMode != True):
+                                    nykyinenHealth -= 1
 
                             # Jos objekti on objektit2-listassa
                             if(objekti in objektit2):
@@ -515,7 +519,7 @@ def save_score():
     if currentDamage < damageDone:
         data["Damage Done"] = damageDone
 
-    # Tallenna tiedot tiedostoon "save.txt"
+    # Tallenna tiedot tiedostoon 'Assets/Save/save.txt'
     with open('save.txt','w') as save_file:
 
         # Käytä jsonia ja kirjoita save_file-tiedostoon data
@@ -663,6 +667,8 @@ def getSound():
     global nykyinenSound
     return str(nykyinenSound)
 
+
+
 # Score
 def getScore():
     global score
@@ -720,6 +726,16 @@ def update_current_sound():
     sound_text = font.render(" Voit laittaa musiikin pois päältä pelissä painamalla 'M'. ", 1, game.Color("black"),  GREEN)
     return sound_text
 
+# Päivitä musiikin teksti
+def UpdateHackStatus():
+    global HackStatus
+    if(HackStatus):
+        status_text = font.render(" Hacks: PÄÄLLÄ " , 1, game.Color("black"),  RED)
+    else:
+        status_text = font.render(" Hacks: POIS " , 1, game.Color("black"),  GREEN)
+    return status_text
+
+
 # Laita audio joko päälle taikka pois päältä
 def audio_toggle(status=bool, currentID=int):
     if(status):
@@ -739,7 +755,7 @@ def instantiate_enemy(amount):
         each = Enemy((r.randint(0, WIDTH)), r.randint(0,200))
         enemies.append(each)
 
-# Piirrä pää-ikkuna
+# Piirrä pää peli-ikkuna
 def game_window(player):
 
     # Määritellään julkiset muuttujat
@@ -763,9 +779,15 @@ def game_window(player):
     explosion_group.update()
 
     # Tee Item-napit
-    Item1 = Button(WIDTH/2 - ITEM1.get_width()/2 - 150, 0, ITEM1)
-    Item2 = Button(WIDTH/2 - ITEM1.get_width()/2,  0, ITEM2)
-    Item3 = Button(WIDTH/2 - ITEM1.get_width()/2 + 150, 0, ITEM3)
+    Item1 = Button(WIDTH/2 - ITEM1.get_width()/2 - 150, HEIGHT - ITEM1.get_height() - BORDERTHICKNESS * 3, ITEM1)
+    Item2 = Button(WIDTH/2 - ITEM1.get_width()/2,  HEIGHT - ITEM1.get_height() - BORDERTHICKNESS * 3, ITEM2)
+    Item3 = Button(WIDTH/2 - ITEM1.get_width()/2 + 150, HEIGHT - ITEM1.get_height() - BORDERTHICKNESS * 3, ITEM3)
+
+    # Piirrä "Paina M laittaaksesi musiikin päälle tai pois"
+    WIN.blit(update_current_sound(), (0, HEIGHT - 30))
+
+    # Piirrä "HackStatus" funktion status tekstinä näytölle
+    WIN.blit(UpdateHackStatus(), (WIDTH / 2 - UpdateHackStatus().get_width() /2, HEIGHT - 150))
 
     # Jos item1 - nappia painetaan, aseta aseeksi 1
     if Item1.draw():
@@ -1020,6 +1042,22 @@ def Enemy_Reload_Weapon():
             # Nykyinen lipas on 0
             nykyinenLipas = 0
 
+# Godmode
+def GodMode():
+    global godMode
+    if (godMode == True):
+        godMode = False
+    else:
+        godMode = True
+
+# Infinite Ammo
+def InfiniteAmmo():
+    global infiniteAmmo
+    if (infiniteAmmo == True):
+        infiniteAmmo = False
+    else:
+        infiniteAmmo = True
+
 
 # Fps:n taustakuva
 def FPS_BG():
@@ -1125,6 +1163,9 @@ def main():
     global killsUntilLevelUP
     global damageDone
     global maxAmmoEnemy
+    global godMode
+    global nykyinenHealth
+
 
     player = Player(1, 1) # laita temp lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
     player = Player((WIDTH - player.ship_img.get_width()) / 2, HEIGHT / 2) # Määritä pelaajan lokaatio
@@ -1151,25 +1192,24 @@ def main():
         maxAmmoEnemy = 350
         infiniteAmmo = False
         
-        # aseta ammot maksimiin
+        # Aseta ammot maksimiin
         if (infiniteAmmo == False):
             nykyinenAmmo = maxAmmo
             nykyinenLipas = maxLipas
         else:
             nykyinenAmmo = int(sys.maxsize)
             nykyinenLipas = int(sys.maxsize)
-        # aseta enemy
+        # Aseta enemy
         firstTime = False
 
-    # looppaa jos run on True
+    # Looppaa jos run on True
     run = True
     while run:
         
         # Päivitä FPS:n verran
         clock.tick(FPS)
-
-
-
+        
+            
 
         # Laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
         if(nykyinenLipas < 0):
@@ -1186,7 +1226,7 @@ def main():
             level_increase()
             print("Increased Level!")
 
-        # tee kaikille vihollisille viholliset-listassa
+        # Tee kaikille vihollisille viholliset-listassa
         for enemyy in enemies:
             global atLeft
             global atRight
@@ -1215,37 +1255,43 @@ def main():
             enemyy.bullet_move(ENEMY_BULLET_VEL, pelaajat)   
 
 
-        # saa kaikki eventit
+        # Saa kaikki eventit
         for event in game.event.get():
 
-            # tarkista jos eventti on poistuminen
+            # Tarkista jos eventti on poistuminen
             if event.type == game.QUIT:
                 # sulje loop
                 run = False
 
             # Jos eventtinä on oma, Päivitä Ammo ja Reload teksti.
             if event.type == game.USEREVENT: 
-
+                
                 # Määritä julkiset muuttujat
                 global text
                 global counter
+                counter = 1
                 counter -= 1  
 
                 # Aseta teksti
                 text = "Reloading... " + str(counter).rjust(3) if counter > 0 else "Done."
-                if counter == 1 and nykyinenAmmo != maxAmmo:
+                if counter == 0 and nykyinenAmmo != maxAmmo:
                         Player_Reload_Weapon()
-                        counter = 2
+                        
                     
             
-            # tunnista jos näppäintä painaa kerran
+            # Tunnista jos näppäintä painaa kerran
             if event.type == game.KEYDOWN:
 
                 # Reload - Jos R-nappia painetaan
                 if (event.key == game.K_r):
                    game.time.set_timer(game.USEREVENT, 1000)
 
-                # tarkasta onko tausta fps:lle päällä
+                # Jumala tila
+                if (event.key == game.K_F5):
+                    GodMode()
+                    InfiniteAmmo()
+
+                # Tarkasta onko tausta fps:lle päällä
                 if (event.key == game.K_INSERT):  # kun insert-nappia painetaan
                     FPS_BG()
 
@@ -1318,9 +1364,6 @@ def death_screen():
         else:
             results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] ",1, GREEN)
 
-        # Tallenna tiedostoon muuttujat
-        save_score()
-
         # Piirrä Title "Kuolit noob"
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
 
@@ -1350,21 +1393,19 @@ def death_screen():
             # Yritä avata save.txt - tiedosto
             if os.path.exists("save.txt"):
                 save_score()
-                os.remove("save.txt")
                 title_label_text = "Save Tallennettu!"
             else:
-                title_label_text = "Ei voitu tallentaa savea (The file does not exist)"
+                title_label_text = "Ei voitu tallentaa savea (Could not load the file, [ !MISSING!] )"
             game.quit()
         
         # Jos delete-nappia painaa, niin poista score tiedosto.
         if delete.draw():
-            # Yritä avata save.txt - tiedosto
             if os.path.exists("save.txt"):
                 os.remove("save.txt")
-                title_label_text = "Save Poistettu!"
+                title_label_text = "Save Tallennettu!"
             else:
-                title_label_text = "Ei voitu poistaa savea (The file does not exist)"
-
+                title_label_text = "Ei voitu tallentaa savea (The file does not exist)"
+        
         # Päivitä ikkuna
         game.display.update()
 
@@ -1382,7 +1423,7 @@ def main_menu():
     # Määritä Title-tekstin fontti Main-Menuun
     title_font = game.font.SysFont("comicsans", 50)
 
-    #Soita Menu- ja pelimusiikki
+    # Soita Menu- ja pelimusiikki
     play_audio("Menu.mp3", 1)
     run = True
     
@@ -1399,11 +1440,14 @@ def main_menu():
 
         # Katso löytyykö save-tiedostoa, ja jos löytyy niin kirjoita "Save Tiedosto Löytyi!" ja jos ei löydy, niin kirjoita "Save Tiedostoa ei löytynyt."
         try:
+            print("Katsotaan löytyykö...")
             with open('save.txt') as save_file:
                 json.load(save_file)
+                
                 save_file_exists = title_font.render("Save Tiedosto Löytyi!",1, GREEN)
         except:
-           save_file_exists = title_font.render("Save Tiedostoa ei löytynyt.",1, RED)
+            print("EI LÖYTYNYT!")
+            save_file_exists = title_font.render("Save Tiedostoa ei löytynyt.",1, RED)
         
         # Piirrä "Paina M laittaaksesi musiikin pois päältä ja päälle pelissä"- teksti
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
