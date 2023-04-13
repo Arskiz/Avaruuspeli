@@ -1,3 +1,5 @@
+import math
+from re import T
 import pygame as game
 import os
 import sys
@@ -6,7 +8,6 @@ import datetime as d;
 import json
 objektit = []
 objektit2 = []
-
 
 
 # Setup
@@ -19,7 +20,7 @@ counter, text = 2, ' '.rjust(3)
 score = 0
 level = 0
 
-
+firstTime2 = True
 HackStatus = False
 godMode = False
 
@@ -32,7 +33,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 CYAN = (0, 255, 255)
-
+color = BLACK
 #mainmenu
 mainMenu = True
 
@@ -65,7 +66,6 @@ ENEMY_BULLET_VEL = 5 # -----|
 # ----------------------|
 gun = 2 #---------------|
 textBGColor = True  # --|
-reloadTime = 2 # ----|
 # ----------------------|
 
 
@@ -164,12 +164,15 @@ SETTINGS  = game.transform.rotate(game.transform.scale(SETTINGS_BUTTON, (MAIN_ME
 EXIT_BUTTON = game.image.load(os.path.join('Assets/UI', 'exit.png')) 
 EXIT  = game.transform.rotate(game.transform.scale(EXIT_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
 
+EXIT_SAVE_BUTTON = game.image.load(os.path.join('Assets/UI', 'exit_save.png')) 
+EXIT_SAVE  = game.transform.rotate(game.transform.scale(EXIT_SAVE_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+
 DELETE_BUTTON = game.image.load(os.path.join('Assets/UI', 'delete.png')) 
 DELETE  = game.transform.rotate(game.transform.scale(DELETE_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
 
 # Settings-Menu nappien kuvat
-MUSIC_BUTTON = game.image.load(os.path.join('Assets/UI', 'music_toggle.png'))
-MUSIC  = game.transform.rotate(game.transform.scale(MUSIC_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
+ULTIMATEFPS_BUTTON = game.image.load(os.path.join('Assets/UI', 'ULTIMATEFPS.png'))
+ULTIMATEFPS  = game.transform.rotate(game.transform.scale(ULTIMATEFPS_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
 
 FPS_TOGGLE_BUTTON = game.image.load(os.path.join('Assets/UI', 'fps_toggle.png'))
 FPSS  = game.transform.rotate(game.transform.scale(FPS_TOGGLE_BUTTON, (MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT)), 0)
@@ -301,6 +304,8 @@ class Ship:
                 self.nykyinenAmmo2 -=gun # Vähennetään vihollisen aseeseen käytettyjen ammusten määrä "nykyinenAmmo"-muuttujasta
             self.firerate_enemy = 1 # Asetetaan cooldown-tila "1"-arvoon
 
+   
+
     # Funktio joka ottaa aluksen Leveyden
     def get_width(self):
         return self.ship_img.get_width()
@@ -322,6 +327,10 @@ class Player(Ship):
         self.bullet_img = BLUE_BULLET
         self.mask = game.mask.from_surface(self.ship_img)
         self.max_health = health
+
+     # Osuma funktio
+    def collision(self, obj):
+        return collide(self, obj)
 
     def bullet_move(self, vel, objs):
 
@@ -406,8 +415,10 @@ class Player(Ship):
 
                                         # Printtaa 
                                         print("poistetaan 1 vihollinen")
-   
-   
+        
+
+                            
+
 # Määritellään vihollisen avaruusalus Ship-luokan periytyväksi alaluokaksi.
 class Enemy(Ship):
     
@@ -643,6 +654,11 @@ def play_audio(file, channelID):
     game.init()
     game.mixer.Channel(channelID).play(game.mixer.Sound("Assets/Sound/" + file))
 
+# Soita audio - funktio
+def play_music(file, channelID):
+    game.init()
+    game.mixer.Channel(channelID).play(game.mixer.Sound("Assets/Sound/" + file), 1)
+
 # Osuma funktio
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
@@ -679,7 +695,7 @@ def getScore():
 def getHealth():
     global nykyinenHealth
     global maxHealth
-    return "(" + (str(int(nykyinenHealth))) + ") - " + str(int(maxHealth)) + ":sta"
+    return "(" + (str(int(nykyinenHealth))) + ") - " + str(int(maxHealth)) + ":stä"
 
 # Kello
 def getClock():
@@ -690,11 +706,12 @@ def getClock():
 
 # Päivitä fps meter
 def update_fps():
+    global color
     fps = str(int(clock.get_fps()))
     if (textBGColor == True):
-        fps_text = font.render(" FPS: " + fps + " ", 1, game.Color("black"),  CYAN)
+        fps_text = font.render(" FPS: " + fps + " ", 1, color,  CYAN)
     else:
-        fps_text = font.render(" FPS: " + fps + " ", 1, game.Color("black"))
+        fps_text = font.render(" FPS: " + fps + " ", 1, color)
     return fps_text
 
 # Päivitä ammo
@@ -706,7 +723,7 @@ def update_ammo():
 # Päivitä score & level
 def update_scoreLevel():
     scoreLevel = getScore()
-    scoreLevel_text = font.render(" " + scoreLevel + " [" + f"Highscore: {data['Highscore']}, Highest Level: {data['Highest Level']}]", 1, game.Color("black"),  CYAN)
+    scoreLevel_text = font.render(" " + scoreLevel + " [" + f"Highscore: {data['Highscore']}, Highest Level: {data['Highest Level']}] ", 1, game.Color("black"),  CYAN)
     return scoreLevel_text
 
 # Päivitä health
@@ -802,7 +819,7 @@ def game_window(player):
         gun = 3
 
     # Piirrä reload teksti
-    WIN.blit(reloadfont.render(text, True, WHITE), (WIDTH / 2, HEIGHT / 2))
+    WIN.blit(reloadfont.render(text, True, WHITE), (WIDTH / 2 - 120, HEIGHT / 2 + 60))
 
 # Piirrä pelin punaiset reunat, joiden yli pelaaja ei voi mennä
 
@@ -939,54 +956,56 @@ def Player_Reload_Weapon():
     global nykyinenLipas
     global nykyinenAmmo
     global maxAmmo
+    global maxLipas
     global counter
     global text
 
     # uusiAmmo tarkoittaa sitä että maxAmmosta poistetaan nykyinen ammo kapasiteetti, josta saa ammon joka täytyy poistaa lippaista
     uusiAmmo = 0
+    
+    # Jos nykyinen lipas ei ole maxAmmo ja jos on isompi kuin 0
+    if(nykyinenAmmo != maxAmmo):
+        if(nykyinenLipas > 0):
 
-    # Jos nykyinen lipas on isompi kuin 0
-    if(nykyinenLipas > 0):
+            # Jos nykyinen ammo on 0
+            if (nykyinenAmmo == 0):
 
-        # Jos nykyinen ammo on 0
-        if (nykyinenAmmo == 0):
+                # Jos nykyinen lipas on surempi kuin max ammo
+                if (nykyinenLipas > maxAmmo):
 
-            # Jos nykyinen lipas on surempi kuin max ammo
-            if (nykyinenLipas > maxAmmo):
+                    # Nykyinen ammo on max ammo
+                    nykyinenAmmo = maxAmmo
 
+                    # Nykyisestä lippaasta poistetaan max ammo
+                    nykyinenLipas -= maxAmmo
+                else:
+
+                    # Nykyinen ammo on nykyinen lipas
+                    nykyinenAmmo = nykyinenLipas
+
+                    # Nykyinen lipas on 0
+                    nykyinenLipas = 0
+
+            # Muuten jos nykyinen ammo on isompi kuin nolla mutta pienempi kun max ammo 
+            elif (nykyinenAmmo > 0 < maxAmmo):
+                # uusiAmmo on max Ammo - nykyinenlipas
+                uusiAmmo = (maxAmmo - nykyinenAmmo)
+
+                print(str(maxAmmo) +  "-" + str(nykyinenAmmo) + "=" + str(uusiAmmo))
                 # Nykyinen ammo on max ammo
                 nykyinenAmmo = maxAmmo
 
-                # Nykyisestä lippaasta poistetaan max ammo
-                nykyinenLipas -= maxAmmo
-            else:
+                # Nykyisestä lippaasta poistetaan uusiAmmo
+                nykyinenLipas -= uusiAmmo
+            
+            # Muuten jos nykyinen lipas on pienempi kuin max ammo
+            elif (nykyinenLipas < maxAmmo):
 
                 # Nykyinen ammo on nykyinen lipas
                 nykyinenAmmo = nykyinenLipas
 
                 # Nykyinen lipas on 0
                 nykyinenLipas = 0
-
-        # Muuten jos nykyinen ammo on isompi kuin nolla mutta pienempi kun max ammo 
-        elif (nykyinenAmmo > 0 < maxAmmo):
-
-            # uusiAmmo on max ammo - nykyinenlipas
-            uusiAmmo = maxAmmo - nykyinenLipas
-
-            # Nykyinen ammo on max ammo
-            nykyinenAmmo = maxAmmo
-
-            # Nykyisestä lippaasta poistetaan uusiAmmo
-            nykyinenLipas -= uusiAmmo
-        
-        # Muuten jos nykyinen lipas on pienemp kuin max ammo
-        elif (nykyinenLipas < maxAmmo):
-
-            # Nykyinen ammo on nykyinen lipas
-            nykyinenAmmo = nykyinenLipas
-
-            # Nykyinen lipas on 0
-            nykyinenLipas = 0
 
 # Vihollisen reload weapon ( --- EI KÄYTÖSSÄ ---)
 def Enemy_Reload_Weapon():
@@ -1062,10 +1081,13 @@ def InfiniteAmmo():
 # Fps:n taustakuva
 def FPS_BG():
     global textBGColor
+    global color
     if (textBGColor == True):
         textBGColor = False
+        color = WHITE
     else:
         textBGColor = True
+        color = BLACK
 
 # Fps päällä vai ei
 def FPS_Toggle():
@@ -1091,6 +1113,48 @@ def player_shoot(player):
 def enemy_shoot(enemy):
     enemy.enemyShoot()
 
+# Pause - Piirto funktio
+def pause_draw():
+    # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä ammo-teksti näytölle
+        rectAmmo = update_ammo().get_rect()
+        WIN.blit(update_ammo(), ((WIDTH - rectAmmo.width - (BORDERTHICKNESS * 2)), 10))
+        
+        # Piirrä score/level-teksti näytölle
+        rectScoreLevel = update_scoreLevel().get_rect()
+        WIN.blit(update_scoreLevel(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - (BORDERTHICKNESS * 3)), 10))
+
+        # Piirrä score/level-teksti näytölle
+        rectHealth = update_health().get_rect()
+        WIN.blit(update_health(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - (BORDERTHICKNESS * 4)), 10))
+        
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - rectClock.width -(BORDERTHICKNESS * 5)), 10))
+        game.display.update()        
+
+# Pause - Piirto funktio
+def settings_and_mainmenu_draw():
+    # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))
+        game.display.update()        
+
 # pause menu
 def pause_menu():
 
@@ -1107,11 +1171,13 @@ def pause_menu():
     # Kun run-loop on päällä
     while run:
 
+        pause_draw()
+
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
         # Määritä title:n teksti
-        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, CYAN)
+        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, CYAN, BLACK)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1167,10 +1233,10 @@ def main():
     global nykyinenHealth
     global HackStatus
 
-    player = Player(1, 1) # laita temp lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
+    player = Player(1, 1) # Laita  lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
     player = Player((WIDTH - player.ship_img.get_width()) / 2, HEIGHT / 2) # Määritä pelaajan lokaatio
     pelaajat.append(player) # Lisää pelaja player-listaan
-
+    
     # Katso onko pelaaja ensimmäistä kertaa pelissä
     if(firstTime == True):
 
@@ -1186,6 +1252,9 @@ def main():
         enemiesKilled = 0
         damageDone = 0
 
+        # Musiikki päälle
+        music = True
+        
         # Aseta aseen data
         maxAmmo = 50
         maxLipas = 350
@@ -1212,16 +1281,15 @@ def main():
         
         # Päivitä Hacks-funktio
         HackStatus = infiniteAmmo
-
         # Laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
         if(nykyinenLipas < 0):
             nykyinenLipas = 0
         if(nykyinenAmmo < 0):
             nykyinenAmmo = 0
 
-        # kutsu musiikkifunktiota
-        audio_toggle(music, musicID)
         
+        audio_toggle(music, 1)
+
         # Jos vihollisia tapettu on yhtä kuin level kertaa Tappoja-Tarvii-Kunnes-Level-UP:
         if(enemiesKilled == level * killsUntilLevelUP):
             # Kutsu lisää uusi level
@@ -1259,7 +1327,7 @@ def main():
 
         # Saa kaikki eventit
         for event in game.event.get():
-
+            global text
             # Tarkista jos eventti on poistuminen
             if event.type == game.QUIT:
                 # sulje loop
@@ -1267,26 +1335,34 @@ def main():
 
             # Jos eventtinä on oma, Päivitä Ammo ja Reload teksti.
             if event.type == game.USEREVENT: 
-                
-                # Määritä julkiset muuttujat
-                global text
-                global counter
-                counter = 1
-                counter -= 1  
-
-                # Aseta teksti
-                text = "Reloading... " + str(counter).rjust(3) if counter > 0 else "Done."
-                if counter == 0 and nykyinenAmmo != maxAmmo:
-                        Player_Reload_Weapon()
+                Player_Reload_Weapon()
+                game.time.set_timer(game.USEREVENT, 0)
+                text = ""
                         
                     
             
             # Tunnista jos näppäintä painaa kerran
             if event.type == game.KEYDOWN:
-
+                global gun
                 # Reload - Jos R-nappia painetaan
                 if (event.key == game.K_r):
-                   game.time.set_timer(game.USEREVENT, 1000)
+                   text = "Ladataan asetta..."
+                   game.time.set_timer(game.USEREVENT, (1000 * gun))
+
+                # Vaihda item
+                if(event.key == game.K_1):
+                    gun = 1
+                if(event.key == game.K_2):
+                    gun = 2
+                if(event.key == game.K_3):
+                    gun = 3
+
+                # Vaihda item
+                if(event.key == game.K_q):
+                    if gun != 3:
+                        gun += 1
+                    else:
+                        gun = 1
 
                 # Jumala tila
                 if (event.key == game.K_F5):
@@ -1334,37 +1410,37 @@ def main():
 # Kuolema näkymä
 def death_screen():
     Button_Space = 10
-    title_label_text = "Kuolit noob"
+    title_label_text = " Kuolit noob "
     title_font = game.font.SysFont("comicsans", 50)
-    play_audio("Death.mp3", 4)
+    play_audio("Death.mp3", 1)
     run = True
     while run:
         WIN.blit(DEATH_BACKGROUND, (0,0))
-        title_label = title_font.render(title_label_text, 1, GREEN)
+        title_label = title_font.render(title_label_text, 1, CYAN, BLACK)
 
         # Jos "Enemies Killed" muuttuja data-taulukossa on pienempi kuin nykyisen pelin tapetut viholliset, kerro että uusi ennätys on tehty.
         if enemiesKilled > data["Enemies Killed"]:
-            results_label = title_font.render('Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] UUSI ENNÄTYS!!!!!!!",1, GREEN)
+            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
         else:
-            results_label = title_font.render('Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] ",1, GREEN)
+            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] ",1, CYAN, BLACK)
         
         # Jos "Damage Done" muuttuja data-taulukossa on pienempi kuin nykyisen pelin vihollisiin tehdyt damaget, kerro että uusi ennätys on tehty.
         if damageDone > data['Damage Done']:
-            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] UUSI ENNÄTYS!!!!!!!",1, GREEN)
+            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
         else:
-            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] ",1, GREEN)
+            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] ",1, CYAN, BLACK)
         
         # Jos "Highscore" muuttuja data-taulukossa on pienempi kuin nykyisen pelin score, kerro että uusi ennätys on tehty.
         if score > data['Highscore']:
-            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] UUSI ENNÄTYS!!!!!!!",1, GREEN)
+            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
         else:
-            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] ",1, GREEN)
+            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] ",1, CYAN, BLACK)
         
         # Jos "Enemies Killed" muuttuja data-taulukossa on pienempi kuin nykyisen pelin tapetut viholliset, kerro että uusi ennätys on tehty.
         if level > data['Highest Level']:
-            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] UUSI ENNÄTYS!!!!!!!",1, GREEN)
+            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
         else:
-            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] ",1, GREEN)
+            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] ",1, CYAN, BLACK)
 
         # Piirrä Title "Kuolit noob"
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1385,25 +1461,22 @@ def death_screen():
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
         
         # Piirrä Poistu pelistä (exit)-nappi
-        exit = Button((WIDTH / 2 - (EXIT.get_width())), (HEIGHT / 2 + 30), EXIT)
+        exit = Button((WIDTH / 2 - (EXIT_SAVE.get_width())), (HEIGHT / 2 + 30), EXIT_SAVE)
 
         # Piirrä Poista Save (highscore jne..)-nappi
         delete = Button((WIDTH / 2  + Button_Space), (HEIGHT / 2 + 30), DELETE)
 
         # Jos exit-nappia painaa, niin tallenna score tiedostoon.
         if exit.draw():
-            # Yritä avata save.txt - tiedosto
             save_score()
             title_label_text = "Tallennettu."
             game.quit()
         
         # Jos delete-nappia painaa, niin poista score tiedosto.
         if delete.draw():
-            try:
-                os.remove("save.txt")
-                title_label_text = "Save Poistettu!"
-            except:
-                print("Error")
+            os.remove("save.txt")
+            title_label_text = "Save Poistettu!"
+            game.quit()
         
         # Päivitä ikkuna
         game.display.update()
@@ -1418,21 +1491,27 @@ def death_screen():
 
 # Päävalikko
 def main_menu():
+    global firstTime2
     Button_Space = 10
+
     # Määritä Title-tekstin fontti Main-Menuun
     title_font = game.font.SysFont("comicsans", 50)
-
-    # Soita Menu- ja pelimusiikki
-    play_audio("Menu.mp3", 1)
+    if(firstTime2 == True):
+        # Soita Menu- ja pelimusiikki
+        play_music("Menu.mp3", 1)
     run = True
     
     # Kun run on päällä-looppi
     while run:
+        
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
+        # Piirrä jutut
+        settings_and_mainmenu_draw()
+
         # Määritä titlen teksti
-        title_label = title_font.render('Paina "Play" aloittaaksesi...', 1, CYAN)
+        title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1453,6 +1532,7 @@ def main_menu():
         
         # Jos play-nappia painetaan:
         if play.draw():
+            firstTime2 = False
             main()
         
         # Jos exit-nappia painetaan:
@@ -1461,6 +1541,7 @@ def main_menu():
 
         # Jos settings-nappia painetaan:
         if settings.draw():
+            firstTime2 = False
             settings_menu()
 
         # Päivitä ikkuna
@@ -1480,7 +1561,7 @@ def settings_menu():
     Button_Space = 10
     # Määritä Title-tekstin fontti Main-Menuun
     title_font = game.font.SysFont("comicsans", 50)
-
+    
     run = True
     
     # Kun run on päällä-looppi
@@ -1488,8 +1569,11 @@ def settings_menu():
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
+        # Piirrä jutut
+        settings_and_mainmenu_draw()
+
         # Määritä titlen teksti
-        title_label = title_font.render('ASETUKSET:', 1, CYAN)
+        title_label = title_font.render('ASETUKSET:', 1, CYAN, BLACK)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1499,7 +1583,7 @@ def settings_menu():
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
 
         # Piirrä settings-nappi
-        Music = Button((WIDTH / 2 - MUSIC.get_width() * 1.5 - Button_Space), (HEIGHT / 2 + 30), MUSIC)
+        UltimateFPS = Button((WIDTH / 2 - ULTIMATEFPS.get_width() * 1.5 - Button_Space), (HEIGHT / 2 + 30), ULTIMATEFPS)
 
         # Piirrä play-nappi
         Fps_Bg = Button((WIDTH / 2 - FPS_BG_BTN.get_width() / 2), (HEIGHT / 2 + 30), FPS_BG_BTN)
@@ -1511,8 +1595,12 @@ def settings_menu():
         Fps = Button((WIDTH / 2 + FPSS.get_width() / 2 + Button_Space), (HEIGHT / 2 + 30), FPSS)
         
         # Jos Musiikki-nappia painetaan:
-        if Music.draw():
-            MUSIC_TOGGLE()
+        if UltimateFPS.draw():
+            global FPS
+            if(FPS == 60):
+                FPS = math.inf
+            else:
+                FPS = 60
         
         # Jos Fps-BG-nappia painetaan:
         if Fps_Bg.draw():
