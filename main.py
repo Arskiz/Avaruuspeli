@@ -1336,7 +1336,7 @@ def death_screen():
     Button_Space = 10
     title_label_text = "Kuolit noob"
     title_font = game.font.SysFont("comicsans", 50)
-    play_audio("Death.mp3", 1)
+    play_audio("Death.mp3", 4)
     run = True
     while run:
         WIN.blit(DEATH_BACKGROUND, (0,0))
