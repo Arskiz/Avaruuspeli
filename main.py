@@ -991,7 +991,7 @@ def Player_Reload_Weapon():
 # Vihollisen reload weapon ( --- EI KÄYTÖSSÄ ---)
 def Enemy_Reload_Weapon():
 
-    # Määritellään julkiset muuttujat
+    # Määritellään julkiset muuttujat (VÄÄRÄT)
     global nykyinenLipas
     global nykyinenAmmo
     global maxAmmo
@@ -1165,13 +1165,13 @@ def main():
     global maxAmmoEnemy
     global godMode
     global nykyinenHealth
-
+    global HackStatus
 
     player = Player(1, 1) # laita temp lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
     player = Player((WIDTH - player.ship_img.get_width()) / 2, HEIGHT / 2) # Määritä pelaajan lokaatio
     pelaajat.append(player) # Lisää pelaja player-listaan
 
-
+    # Katso onko pelaaja ensimmäistä kertaa pelissä
     if(firstTime == True):
 
         # Tee vihollinen
@@ -1199,7 +1199,8 @@ def main():
         else:
             nykyinenAmmo = int(sys.maxsize)
             nykyinenLipas = int(sys.maxsize)
-        # Aseta enemy
+
+        # Aseta firstTime pois
         firstTime = False
 
     # Looppaa jos run on True
@@ -1209,7 +1210,8 @@ def main():
         # Päivitä FPS:n verran
         clock.tick(FPS)
         
-            
+        # Päivitä Hacks-funktio
+        HackStatus = infiniteAmmo
 
         # Laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
         if(nykyinenLipas < 0):
@@ -1310,7 +1312,7 @@ def main():
         # Händlää liikkuminen 
         handleMovement(keys_pressed)
 
-        # piirrä peli-ikkuna
+        # Piirrä peli-ikkuna
         game_window(player)
 
         # Jos painetaan ammunta-nappia
@@ -1326,7 +1328,7 @@ def main():
         
 
         
-    # lopeta peli jos loop menee pois päältä
+    # Lopeta peli jos loop menee pois päältä
     game.quit()
 
 # Kuolema näkymä
