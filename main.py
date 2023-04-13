@@ -120,7 +120,7 @@ except:
 
 
 # Pelaajan Rectangle
-SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 55, 40
+SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 50, 50
 SPACESHIP_IMAGE = game.image.load(os.path.join('Assets/Player', 'spaceship.png'))
 PLAYER = game.transform.rotate(game.transform.scale(
     SPACESHIP_IMAGE, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)), 0)
@@ -1140,20 +1140,7 @@ def pause_draw():
         WIN.blit(update_clock(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - rectClock.width -(BORDERTHICKNESS * 5)), 10))
         game.display.update()        
 
-# Pause - Piirto funktio
-def settings_and_mainmenu_draw():
-    # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
-        if (showCounter):
-            fps = str(int(clock.get_fps()))
-            game.display.set_caption("Testipeli - FPS: " + fps)
-            WIN.blit(update_fps(), (10, 10))
-        else:
-            game.display.set_caption("Testipeli")
-
-        # Piirrä kello-teksti näytölle
-        rectClock = update_clock().get_rect()
-        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))
-        game.display.update()        
+    
 
 # pause menu
 def pause_menu():
@@ -1197,6 +1184,17 @@ def pause_menu():
         if exit.draw():
             game.quit()
 
+        # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))      
 
         # Päivitä ikkuna
         game.display.update()
@@ -1507,11 +1505,24 @@ def main_menu():
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
-        # Piirrä jutut
-        settings_and_mainmenu_draw()
+        # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))
+        game.display.update()        
 
         # Määritä titlen teksti
         title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
+
+        # Määritä ohjeiden teksti
+        control_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1569,8 +1580,17 @@ def settings_menu():
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
-        # Piirrä jutut
-        settings_and_mainmenu_draw()
+        # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))
 
         # Määritä titlen teksti
         title_label = title_font.render('ASETUKSET:', 1, CYAN, BLACK)
