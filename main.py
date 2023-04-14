@@ -415,9 +415,6 @@ class Player(Ship):
                                         # Printtaa 
                                         print("poistetaan 1 vihollinen")
         
-
-                            
-
 # Määritellään vihollisen avaruusalus Ship-luokan periytyväksi alaluokaksi.
 class Enemy(Ship):
     
