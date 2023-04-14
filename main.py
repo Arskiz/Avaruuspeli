@@ -546,20 +546,23 @@ def save_score():
 
     # Katsoo jos muuttujien arvot on isompia kuin save-tiedostossa olevat arvot ja enkryptoi valuet tietojen vaihtelun varalta
     if currentScore < score:
-        data['Highscore'] = Encrypt_Int(score)
+        data['Highscore'] = score
 
     if currentLevel < level:
-        data["Highest Level"] = Encrypt_Int(level)
+        data["Highest Level"] = level
 
     if currentKills < enemiesKilled:
-        data["Enemies Killed"] = Encrypt_Int(enemiesKilled)
+        data["Enemies Killed"] = enemiesKilled
 
     if currentDamage < damageDone:
-        data["Damage Done"] = Encrypt_Int(damageDone)
+        data["Damage Done"] = damageDone
 
     # Tallenna tiedot tiedostoon 'save.txt'
     with open('save.txt','w') as save_file:
-
+        data['Highscore'] = Encrypt_Int(data['Highscore'])
+        data['Highest Level'] = Encrypt_Int(data['Highest Level'])
+        data['Enemies Killed'] = Encrypt_Int(data['Enemies Killed'])
+        data['Damage Done'] = Encrypt_Int(data['Damage Done'])
         # Käytä jsonia ja kirjoita save_file-tiedostoon data
         json.dump(data, save_file)
     
