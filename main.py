@@ -619,8 +619,16 @@ def play_audio(file, channelID):
 # Soita audio - funktio
 def play_music(file, channelID):
     game.init()
-    game.mixer.Channel(channelID).play(game.mixer.Sound("Assets/Sound/" + file), 1)
+    game.mixer.Channel(channelID).play(game.mixer.Sound("Assets/Sound/" + file), 0)
 
+# Menu-musiikin funktio
+def Play_MenuMusic(channelID):
+    if game.mixer.Channel(channelID).get_busy() != True:
+        menuMusic = r.randint(0, 1)
+        if(menuMusic == 0):
+            play_music("MainTheme.mp3", 1)
+        else:
+            play_music("ImperialMarch.mp3", 1)
 # Osuma funktio
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
@@ -1454,14 +1462,15 @@ def main_menu():
 
     # Määritä Title-tekstin fontti Main-Menuun
     title_font = game.font.SysFont("comicsans", 50)
-    if(firstTime2 == True):
-        # Soita Menu- ja pelimusiikki
-        play_music("Menu.mp3", 1)
     run = True
     
     # Kun run on päällä-looppi
     while run:
-        
+        global music
+
+        Play_MenuMusic(1)
+
+        audio_toggle(music, 1)
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
@@ -1516,10 +1525,14 @@ def main_menu():
 
         # Saa kaikki eventit
         for event in game.event.get():
+            if(event.type == game.KEYDOWN):
+                 if (event.key == game.K_m):
+                    MUSIC_TOGGLE()
             
             # Jos eventti on game.QUIT, sulje loop
             if(event.type == game.QUIT):
                 run = False
+            
 
     # Poistu pelistä
     game.quit()
@@ -1534,6 +1547,9 @@ def settings_menu():
     
     # Kun run on päällä-looppi
     while run:
+        global music
+        audio_toggle(music, 1)
+
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
@@ -1574,10 +1590,10 @@ def settings_menu():
         # Jos Musiikki-nappia painetaan:
         if UltimateFPS.draw():
             global FPS
-            if(FPS == 60):
-                FPS = math.inf
-            else:
+            if(FPS != 60):
                 FPS = 60
+            else:
+                FPS = math.inf
         
         # Jos Fps-BG-nappia painetaan:
         if Fps_Bg.draw():
@@ -1596,10 +1612,13 @@ def settings_menu():
 
         # Saa kaikki eventit
         for event in game.event.get():
-            
             # Jos eventti on game.QUIT, sulje loop
             if(event.type == game.QUIT):
                 run = False
+            # Jos even taas on (napin painallus):
+            if(event.type == game.KEYDOWN):
+                if(event.key == game.K_m):
+                    MUSIC_TOGGLE()
     # Poistu pelistä
     game.quit()
 
