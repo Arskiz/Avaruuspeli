@@ -108,9 +108,24 @@ atRight = False
 leftMovement = False
 rightMovement = False
 
+# Enkryptoi int
+def Encrypt_Int(value):
+    print("Normaali value: " + str(value))
+    value = value * 868374 
+    print("Enkryptoitu value: " + str(value))
+    return int(value)
+
+# Dekryptoi int
+def Decrypt_Int(value):
+    print("Enkryptoitu value: " + str(value))
+    value = value / 868374 
+    print("Normaali value: " + str(value))
+    return int(value)
+
+
 # Tallenna json-tiedostona nämä variablet
 data = {
-    'Highscore' : score,
+    'Highscore' :  score,
     'Highest Level' : level,
     'Enemies Killed' : enemiesKilled,
     'Damage Done' : damageDone
@@ -124,8 +139,10 @@ controlsToggled = False
 try:
     with open('save.txt') as save_file:
         data = json.load(save_file)
+        
 except:
     print("Ei löytynyt savea.") # Tekee uuden saven pelin päättyessä halutessaan
+
 
 
 # Pelaajan Rectangle (Määritä kuva)
@@ -527,18 +544,18 @@ def save_score():
     currentKills = data["Enemies Killed"]
     currentDamage = data["Damage Done"]
 
-    # Katsoo jos muuttujien arvot on isompia kuin save-tiedostossa olevat arvot
+    # Katsoo jos muuttujien arvot on isompia kuin save-tiedostossa olevat arvot ja enkryptoi valuet tietojen vaihtelun varalta
     if currentScore < score:
-        data['Highscore'] = score
+        data['Highscore'] = Encrypt_Int(score)
 
     if currentLevel < level:
-        data["Highest Level"] = level
+        data["Highest Level"] = Encrypt_Int(level)
 
     if currentKills < enemiesKilled:
-        data["Enemies Killed"] = enemiesKilled
+        data["Enemies Killed"] = Encrypt_Int(enemiesKilled)
 
     if currentDamage < damageDone:
-        data["Damage Done"] = damageDone
+        data["Damage Done"] = Encrypt_Int(damageDone)
 
     # Tallenna tiedot tiedostoon 'save.txt'
     with open('save.txt','w') as save_file:
@@ -1121,7 +1138,7 @@ def enemy_shoot(enemy):
     enemy.enemyShoot()
 
 
-    
+
 
 # Pause menu
 def pause_menu():
@@ -1304,12 +1321,19 @@ def main():
         # Aseta firstTime pois
         firstTime = False
 
+    # Dekryptoi score.. jne
+    data['Highscore'] = Decrypt_Int(data['Highscore'])
+    data['Highest Level'] = Decrypt_Int(data['Highest Level'])
+    data['Enemies Killed'] = Decrypt_Int(data['Enemies Killed'])
+    data['Damage Done'] = Decrypt_Int(data['Damage Done'])
+
     # Looppaa jos run on True
     run = True
     while run:
         
         # Päivitä FPS:n verran
         clock.tick(FPS)
+        
 
         # Soita musiikkikanavalla musiikkia aina (kanava 1)
         Play_MenuMusic(1)
@@ -1544,6 +1568,10 @@ def death_screen():
 # Päävalikko
 def main_menu():
     global firstTime2
+    global score
+    global level
+    global enemiesKilled
+    global damageDone
     global FPS
     FPS = 60
     Button_Space = 10
