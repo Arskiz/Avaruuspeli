@@ -25,7 +25,7 @@ firstTime2 = True
 # Huijauskoodit
 HackStatus = False
 godMode = False
-
+text = ""
 
 
 # Värit
@@ -202,6 +202,7 @@ DEATH_BACKGROUND = game.image.load(os.path.join('Assets/UI', 'background-death.p
 KILL_SCORE = r.randint(100, 120)
 HIT_SCORE = r.randint(1, 3)
 
+# 
 class Bullet:
 
     # Perusarvot
@@ -918,7 +919,6 @@ def Player_Reload_Weapon():
     global nykyinenAmmo
     global maxAmmo
     global maxLipas
-    global counter
     global text
 
     # uusiAmmo tarkoittaa sitä että maxAmmosta poistetaan nykyinen ammo kapasiteetti, josta saa ammon joka täytyy poistaa lippaista
@@ -1103,7 +1103,7 @@ def pause_draw():
 
     
 
-# pause menu
+# Pause menu
 def pause_menu():
 
     # Määritä julkiset muuttujat
@@ -1179,7 +1179,6 @@ def main():
     global nykyinenAmmo
     global nykyinenLipas
     global music
-    global counter
     global infiniteAmmo
     global firstTime
     global level
@@ -1192,7 +1191,7 @@ def main():
     global nykyinenHealth
     global HackStatus
 
-    player = Player(1, 1) # Laita  lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
+    player = Player(1, 1) # Laita lokaatio pelaajalle ennen sen alkuperäistä määrittämistä
     player = Player((WIDTH - player.ship_img.get_width()) / 2, HEIGHT / 2) # Määritä pelaajan lokaatio
     pelaajat.append(player) # Lisää pelaja player-listaan
     
@@ -1332,11 +1331,11 @@ def main():
                 if (event.key == game.K_INSERT):  # kun insert-nappia painetaan
                     FPS_BG()
 
-                # tarkasta onko fps päällä
+                # Tarkasta onko fps päällä
                 if (event.key == game.K_HOME):  # kun home-nappia painetaan
                     FPS_Toggle()
 
-                # jos painetaan "M" nappia, musiikki menee pois päältä tai päälle riippuen sen statuksesta
+                # Jos painetaan "M" nappia, musiikki menee pois päältä tai päälle riippuen sen statuksesta
                 if (event.key == game.K_m):
                     MUSIC_TOGGLE()
                     
@@ -1481,9 +1480,6 @@ def main_menu():
         # Määritä titlen teksti
         title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
 
-        # Määritä ohjeiden teksti
-        control_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
-
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
         
@@ -1524,6 +1520,7 @@ def main_menu():
             # Jos eventti on game.QUIT, sulje loop
             if(event.type == game.QUIT):
                 run = False
+
     # Poistu pelistä
     game.quit()
 
