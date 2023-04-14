@@ -202,7 +202,7 @@ DEATH_BACKGROUND = game.image.load(os.path.join('Assets/UI', 'background-death.p
 KILL_SCORE = r.randint(100, 120)
 HIT_SCORE = r.randint(1, 3)
 
-# 
+# Luodin luokka
 class Bullet:
 
     # Perusarvot
@@ -397,9 +397,9 @@ class Player(Ship):
                             damageDone += KILL_SCORE
                             enemiesKilled += 1
                             
-                            if len(enemies) < maxEnemies: # Tarkistetaan onko vihollisten määrä isompi kuin maksimi sallittu määrä
+                            if len(enemies) < maxEnemies: # Tarkistetaan onko vihollisten määrä pienempi kuin maksimi sallittu määrä
                                 instantiate_enemy(level) # Luodaan uusi vihollinen levelin perusteella
-                            else:
+                            else: # Jos on isompi kuin maksimi sallittu määrä
 
                                 # Printtaa varoitus teksti
                                 print("VAROITUS! Vihollisia liikaa!!\n" + "Vihollisia liikaa: (" + str(int(len(enemies)) - maxEnemies)   + ") yhteensä: (" + str(len(enemies)) + ")!!")
