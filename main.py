@@ -29,13 +29,18 @@ text = ""
 
 
 # Värit
-WHITE = (255, 255, 255)
+WHITE = (163, 163, 163)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 CYAN = (0, 255, 255)
-color = BLACK
+GRAY = (50, 50, 50)
+LIGHT_GRAY = (28, 28, 28)
+
+
+# FPS-mittarin tekstin väri
+color = WHITE
 
 # Mainmenu
 mainMenu = True
@@ -81,8 +86,11 @@ killsUntilLevelUP = 3 # paljon tappoja tarvii kunnes level upataan?
 pelaajat = [] # lista pelaajista
 
 
-# Idk
+# Reload Fontti
 reloadfont = game.font.SysFont('Consolas', 30)
+
+# Main fontti
+main_font = game.font.SysFont('Helvetica', 30)
 
 # Äänet
 nykyinenSound = "Menu"
@@ -108,7 +116,9 @@ data = {
     'Damage Done' : damageDone
 }
 
-
+# Kontrollit toggle
+showControl = "Näytä kontrollit [P]"
+controlsToggled = False
 
 # Yritä avata save.txt - tiedosto
 try:
@@ -195,10 +205,13 @@ ITEM3  = game.transform.rotate(game.transform.scale(ITEM3_BUTTON, (ITEM_BUTTON_W
 # Taustakuva
 BACKGROUND = game.image.load(os.path.join('Assets/UI', 'background-black.png'))
 
-# Taustakuva
+# Taustakuva kuolema-näkymälle
 DEATH_BACKGROUND = game.image.load(os.path.join('Assets/UI', 'background-death.png'))
 
-#level & score
+# Taustakuva Peli-näkymälle
+GAME_BACKGROUND = game.image.load(os.path.join('Assets/UI', 'game_background.png'))
+
+# Level & Score
 KILL_SCORE = r.randint(100, 120)
 HIT_SCORE = r.randint(1, 3)
 
@@ -679,7 +692,7 @@ def update_fps():
     global color
     fps = str(int(clock.get_fps()))
     if (textBGColor == True):
-        fps_text = font.render(" FPS: " + fps + " ", 1, color,  CYAN)
+        fps_text = font.render(" FPS: " + fps + " ", 1, color,  LIGHT_GRAY)
     else:
         fps_text = font.render(" FPS: " + fps + " ", 1, color)
     return fps_text
@@ -687,39 +700,39 @@ def update_fps():
 # Päivitä ammo
 def update_ammo():
     ammo = getAmmo()
-    ammo_text = font.render(" Ammo: " + ammo + " ", 1, game.Color("black"),  CYAN)
+    ammo_text = font.render(" Ammo: " + ammo + " ", 1, WHITE,  LIGHT_GRAY)
     return ammo_text
 
 # Päivitä score & level
 def update_scoreLevel():
     scoreLevel = getScore()
-    scoreLevel_text = font.render(" " + scoreLevel + " [" + f"Highscore: {data['Highscore']}, Highest Level: {data['Highest Level']}] ", 1, game.Color("black"),  CYAN)
+    scoreLevel_text = font.render(" " + scoreLevel + " [" + f"Highscore: {data['Highscore']}, Highest Level: {data['Highest Level']}] ", 1, WHITE,  LIGHT_GRAY)
     return scoreLevel_text
 
 # Päivitä health
 def update_health():
     health = getHealth()
-    health_text = font.render(" Elämiä jäljellä: " + health + " ", 1, game.Color("black"),  GREEN)
+    health_text = font.render(" Elämiä jäljellä: " + health + " ", 1, WHITE,  LIGHT_GRAY)
     return health_text
 
 # Päivitä kello
 def update_clock():
     clock = getClock()
-    clock_text = font.render(" Kello: " + clock + " ", 1, game.Color("black"), CYAN)
+    clock_text = font.render(" Kello: " + clock + " ", 1, WHITE,  LIGHT_GRAY)
     return clock_text
 
 # Päivitä musiikin teksti
 def update_current_sound():
-    sound_text = font.render(" Voit laittaa musiikin pois päältä pelissä painamalla 'M'. ", 1, game.Color("black"),  GREEN)
+    sound_text = font.render(" Voit laittaa musiikin pois päältä pelissä painamalla 'M'. ", 1, WHITE,  LIGHT_GRAY)
     return sound_text
 
 # Päivitä musiikin teksti
 def UpdateHackStatus():
     global HackStatus
     if(HackStatus):
-        status_text = font.render(" Hacks: PÄÄLLÄ " , 1, game.Color("black"),  RED)
+        status_text = font.render(" Hacks: PÄÄLLÄ " , 1, WHITE,  LIGHT_GRAY)
     else:
-        status_text = font.render(" Hacks: POIS " , 1, game.Color("black"),  GREEN)
+        status_text = font.render(" Hacks: POIS " , 1, WHITE,  LIGHT_GRAY)
     return status_text
 
 
@@ -748,8 +761,8 @@ def game_window(player):
     # Määritellään julkiset muuttujat
     global text
     global gun
-
-    # Laita taustaväriksi musta
+    
+    # Taustakuva
     WIN.fill(BLACK)
 
     # Piirrä pelaajan alus
@@ -771,10 +784,17 @@ def game_window(player):
     Item3 = Button(WIDTH/2 - ITEM1.get_width()/2 + 150, HEIGHT - ITEM1.get_height() - BORDERTHICKNESS * 3, ITEM3)
 
     # Piirrä "Paina M laittaaksesi musiikin päälle tai pois"
-    WIN.blit(update_current_sound(), (0, HEIGHT - 30))
+    WIN.blit(update_current_sound(), (0 + BORDERTHICKNESS * 2, HEIGHT - BORDERTHICKNESS * 7))
 
     # Piirrä "HackStatus" funktion status tekstinä näytölle
     WIN.blit(UpdateHackStatus(), (WIDTH / 2 - UpdateHackStatus().get_width() /2, HEIGHT - 150))
+
+    # Kontrollit
+    global showControl
+    global controlsToggled
+
+    Controls_Toggle(controlsToggled)
+        
 
     # Jos item1 - nappia painetaan, aseta aseeksi 1
     if Item1.draw():
@@ -794,16 +814,16 @@ def game_window(player):
 # Piirrä pelin punaiset reunat, joiden yli pelaaja ei voi mennä
 
     # Vasen kulma
-    game.draw.rect(WIN, RED, LEFT_BORDER)
+    game.draw.rect(WIN, LIGHT_GRAY, LEFT_BORDER)
 
     # Oikea kulma
-    game.draw.rect(WIN, RED, RIGHT_BORDER)
+    game.draw.rect(WIN, LIGHT_GRAY, RIGHT_BORDER)
 
     # Yläkulma
-    game.draw.rect(WIN, RED, UPPER_BORDER)
+    game.draw.rect(WIN, LIGHT_GRAY, UPPER_BORDER)
 
     # Alakulma
-    game.draw.rect(WIN, RED, DOWN_BORDER)
+    game.draw.rect(WIN, LIGHT_GRAY, DOWN_BORDER)
 
     # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
     if (showCounter):
@@ -1053,10 +1073,10 @@ def FPS_BG():
     global color
     if (textBGColor == True):
         textBGColor = False
-        color = WHITE
+        color = LIGHT_GRAY
     else:
         textBGColor = True
-        color = BLACK
+        color = WHITE
 
 # Fps päällä vai ei
 def FPS_Toggle():
@@ -1074,6 +1094,24 @@ def MUSIC_TOGGLE():
     else:
         music = True
 
+# Controls Toggle
+def Controls_Toggle(status):
+    global showControl
+    if(status):
+        showControl = " Piilota kontrollit [P] "
+        WIN.blit(main_font.render(showControl, True, WHITE, GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 - 34))
+        WIN.blit(main_font.render(" Ammu [Vasen Shift] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2))
+        WIN.blit(main_font.render(" Vaihda asetta [Q tai (1~3)] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34))
+        WIN.blit(main_font.render(" Lataa ase [R] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34 * 2))
+        WIN.blit(main_font.render(" Huijauskoodit [F5] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34 * 3))
+        WIN.blit(main_font.render(" FPS-mittarin tausta [INSERT] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34 * 4))
+        WIN.blit(main_font.render(" FPS-mittari [HOME] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34 * 5))
+        WIN.blit(main_font.render(" Laita peli tauolle [ESC] ", True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 + 34 * 6))
+    else:
+        showControl = " Näytä kontrollit [P] "
+        WIN.blit(main_font.render(showControl, True, WHITE, LIGHT_GRAY), (0 + BORDERTHICKNESS * 2, HEIGHT / 2 - 34))
+    
+
 # Ammu-funktio pelaajalle
 def player_shoot(player):
     player.playerShoot()
@@ -1082,32 +1120,6 @@ def player_shoot(player):
 def enemy_shoot(enemy):
     enemy.enemyShoot()
 
-# Pause - Piirto funktio
-def pause_draw():
-    # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
-        if (showCounter):
-            fps = str(int(clock.get_fps()))
-            game.display.set_caption("Testipeli - FPS: " + fps)
-            WIN.blit(update_fps(), (10, 10))
-        else:
-            game.display.set_caption("Testipeli")
-
-        # Piirrä ammo-teksti näytölle
-        rectAmmo = update_ammo().get_rect()
-        WIN.blit(update_ammo(), ((WIDTH - rectAmmo.width - (BORDERTHICKNESS * 2)), 10))
-        
-        # Piirrä score/level-teksti näytölle
-        rectScoreLevel = update_scoreLevel().get_rect()
-        WIN.blit(update_scoreLevel(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - (BORDERTHICKNESS * 3)), 10))
-
-        # Piirrä score/level-teksti näytölle
-        rectHealth = update_health().get_rect()
-        WIN.blit(update_health(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - (BORDERTHICKNESS * 4)), 10))
-        
-        # Piirrä kello-teksti näytölle
-        rectClock = update_clock().get_rect()
-        WIN.blit(update_clock(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - rectClock.width -(BORDERTHICKNESS * 5)), 10))
-        game.display.update()        
 
     
 
@@ -1117,7 +1129,9 @@ def pause_menu():
     # Määritä julkiset muuttujat
     global firstTime
     global gun
-    
+    global music
+    global idleAnimations
+
     # Määritä titlen fontti
     title_font = game.font.SysFont("comicsans", 50)
 
@@ -1127,13 +1141,21 @@ def pause_menu():
     # Kun run-loop on päällä
     while run:
 
-        pause_draw()
+        
+        idleAnimations = True
+
+
+        # Hyväksy m-togglen käyttö (musiikin togglaus)
+        audio_toggle(music, 1)
+
+        # Soita pause menussa menu musiikkia aina kanava 1:llä (musiikkikanava)
+        Play_MenuMusic(1)
 
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
 
         # Määritä title:n teksti
-        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, CYAN, BLACK)
+        title_label = title_font.render('Paina "Play" Jatkaaksesi...', 1, WHITE, LIGHT_GRAY)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1163,7 +1185,48 @@ def pause_menu():
 
         # Piirrä kello-teksti näytölle
         rectClock = update_clock().get_rect()
-        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))      
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))     
+
+
+        # Jos fps counter-bool on päällä, piirrä fps teksti näytölle ja laita otsikoksi nimi & fps
+        if (showCounter):
+            fps = str(int(clock.get_fps()))
+            game.display.set_caption("Testipeli - FPS: " + fps)
+            WIN.blit(update_fps(), (10, 10))
+        else:
+            game.display.set_caption("Testipeli")
+
+        # Piirrä ammo-teksti näytölle
+        rectAmmo = update_ammo().get_rect()
+        WIN.blit(update_ammo(), ((WIDTH - rectAmmo.width - (BORDERTHICKNESS * 2)), 10))
+        
+        # Piirrä score/level-teksti näytölle
+        rectScoreLevel = update_scoreLevel().get_rect()
+        WIN.blit(update_scoreLevel(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - (BORDERTHICKNESS * 3)), 10))
+
+        # Piirrä score/level-teksti näytölle
+        rectHealth = update_health().get_rect()
+        WIN.blit(update_health(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - (BORDERTHICKNESS * 4)), 10))
+        
+        # Piirrä kello-teksti näytölle
+        rectClock = update_clock().get_rect()
+        WIN.blit(update_clock(), ((WIDTH - rectAmmo.width - rectScoreLevel.width - rectHealth.width - rectClock.width -(BORDERTHICKNESS * 5)), 10)) 
+
+
+        # ------------------- IDLE ANIMATIONS -------------------- #
+        
+        playerX = 0
+        playerY = HEIGHT
+        
+        if(playerX != WIDTH and playerY != 0):
+            playerX += 2
+            playerY -= 2
+            WIN.blit(PLAYER, (playerX, playerY))
+
+        # ------------------- IDLE ANIMATIONS -------------------- #
+        
+
+
 
         # Päivitä ikkuna
         game.display.update()
@@ -1173,6 +1236,10 @@ def pause_menu():
             # Jos eventti on game.QUIT, sulje run-loop
             if(event.type == game.QUIT):
                 run = False
+            if(event.type == game.KEYDOWN):
+                if(event.key == game.K_m):
+                    MUSIC_TOGGLE()
+
 
 
     # Poistu pelistä
@@ -1205,7 +1272,6 @@ def main():
     
     # Katso onko pelaaja ensimmäistä kertaa pelissä
     if(firstTime == True):
-
         # Tee vihollinen
         enemy = Enemy((r.randint(0, WIDTH)), 100)
 
@@ -1244,17 +1310,26 @@ def main():
         
         # Päivitä FPS:n verran
         clock.tick(FPS)
-        
+
+        # Soita musiikkikanavalla musiikkia aina (kanava 1)
+        Play_MenuMusic(1)
+
         # Päivitä Hacks-funktio
         HackStatus = infiniteAmmo
+        
         # Laita aseen ammot nollaan jos reload asettaa ne nollan alapuolelle
         if(nykyinenLipas < 0):
             nykyinenLipas = 0
         if(nykyinenAmmo < 0):
             nykyinenAmmo = 0
 
-        
+        # Funktio audion togleen (music boolean, kanava(channelID))
         audio_toggle(music, 1)
+
+        # Funktio kontrollien piirto togleen
+        global controlsToggled
+        Controls_Toggle(controlsToggled)
+
 
         # Jos vihollisia tapettu on yhtä kuin level kertaa Tappoja-Tarvii-Kunnes-Level-UP:
         if(enemiesKilled == level * killsUntilLevelUP):
@@ -1346,6 +1421,13 @@ def main():
                 # Jos painetaan "M" nappia, musiikki menee pois päältä tai päälle riippuen sen statuksesta
                 if (event.key == game.K_m):
                     MUSIC_TOGGLE()
+
+                # Jos painetaan P nappia, togglaa kontrolli homma
+                if (event.key == game.K_p):
+                    if controlsToggled != True:
+                        controlsToggled = True
+                    else:
+                        controlsToggled = False
                     
 
         # saa lista kaikista näppäimistön näppäimistä joita painetaan pohjassa
@@ -1382,46 +1464,50 @@ def death_screen():
     run = True
     while run:
         WIN.blit(DEATH_BACKGROUND, (0,0))
-        title_label = title_font.render(title_label_text, 1, CYAN, BLACK)
+        title_label = title_font.render(title_label_text, 1, WHITE, LIGHT_GRAY)
 
         # Jos "Enemies Killed" muuttuja data-taulukossa on pienempi kuin nykyisen pelin tapetut viholliset, kerro että uusi ennätys on tehty.
         if enemiesKilled > data["Enemies Killed"]:
-            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
+            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] UUSI ENNÄTYS!!!!!!!",1, WHITE, LIGHT_GRAY)
         else:
-            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] ",1, CYAN, BLACK)
+            results_label = title_font.render(' Vihollisia tapettu: ' + str(enemiesKilled) + " [Ennätys: " + str(data["Enemies Killed"]) + "] ",1, WHITE, LIGHT_GRAY)
         
-        # Jos "Damage Done" muuttuja data-taulukossa on pienempi kuin nykyisen pelin vihollisiin tehdyt damaget, kerro että uusi ennätys on tehty.
+        # Jos "Damage Done" muuttuja data-taulukossa on pienempi kuin nykyisen pelin vihollisiin tehdyt damage, kerro että uusi ennätys on tehty.
         if damageDone > data['Damage Done']:
-            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
+            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] UUSI ENNÄTYS!!!!!!!",1, WHITE, LIGHT_GRAY)
         else:
-            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] ",1, CYAN, BLACK)
+            results2_label = title_font.render(" Damagea tehty: " + str(damageDone) + " [Ennätys: " + str(data["Damage Done"]) + "] ",1, WHITE, LIGHT_GRAY)
         
         # Jos "Highscore" muuttuja data-taulukossa on pienempi kuin nykyisen pelin score, kerro että uusi ennätys on tehty.
         if score > data['Highscore']:
-            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
+            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] UUSI ENNÄTYS!!!!!!!",1, WHITE, LIGHT_GRAY)
         else:
-            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] ",1, CYAN, BLACK)
+            results3_label = title_font.render(" Score: " + str(score) + " [Ennätys: " + str(data["Highscore"]) + "] ",1, WHITE, LIGHT_GRAY)
         
-        # Jos "Enemies Killed" muuttuja data-taulukossa on pienempi kuin nykyisen pelin tapetut viholliset, kerro että uusi ennätys on tehty.
+        # Jos "Highest Level" muuttuja data-taulukossa on pienempi kuin nykyisen pelin level, kerro että uusi ennätys on tehty.
         if level > data['Highest Level']:
-            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] UUSI ENNÄTYS!!!!!!!",1, CYAN, BLACK)
+            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] UUSI ENNÄTYS!!!!!!!",1, WHITE, LIGHT_GRAY)
         else:
-            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] ",1, CYAN, BLACK)
+            results4_label = title_font.render(" Level: " + str(level) + " [Ennätys: " + str(data["Highest Level"]) + "] ",1, WHITE, LIGHT_GRAY)
+        results5_label = title_font.render(" Tulokset: ",1, WHITE, GRAY)
 
         # Piirrä Title "Kuolit noob"
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
 
         # Piirrä Vihollisia tapettu-teksti
-        WIN.blit(results_label, (0, HEIGHT / 2 - 150))
+        WIN.blit(results_label, (WIDTH/2 - results_label.get_width()/2, HEIGHT / 2 - 160))
 
         # Piirrä Damagea tehty-teksti
-        WIN.blit(results2_label, (0, HEIGHT / 2 - 250))
+        WIN.blit(results2_label, (WIDTH/2 - results2_label.get_width()/2, HEIGHT / 2 - 230))
 
         # Piirrä Highscore-teksti
-        WIN.blit(results3_label, (0, HEIGHT / 2 - 350))
+        WIN.blit(results3_label, (WIDTH/2 - results3_label.get_width()/2, HEIGHT / 2 - 300))
 
         # Piirrä Isoin Level-teksti
-        WIN.blit(results4_label, (0, HEIGHT / 2 - 450))
+        WIN.blit(results4_label, (WIDTH/2 - results4_label.get_width()/2, HEIGHT / 2 - 370))
+
+        # Piirrä TULOKSET-teksti
+        WIN.blit(results5_label, (WIDTH/2 - results5_label.get_width()/2, HEIGHT / 2 - 440))
 
         # Piirrä "paina m laittaaksesi musiikin pois päältä" teksti
         WIN.blit(update_current_sound(), (WIDTH/2 - update_current_sound().get_width()/2, HEIGHT - 30))
@@ -1458,6 +1544,8 @@ def death_screen():
 # Päävalikko
 def main_menu():
     global firstTime2
+    global FPS
+    FPS = 60
     Button_Space = 10
 
     # Määritä Title-tekstin fontti Main-Menuun
@@ -1467,7 +1555,7 @@ def main_menu():
     # Kun run on päällä-looppi
     while run:
         global music
-
+        idleAnimations = True
         Play_MenuMusic(1)
 
         audio_toggle(music, 1)
@@ -1487,7 +1575,7 @@ def main_menu():
         WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))     
 
         # Määritä titlen teksti
-        title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
+        title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, WHITE, LIGHT_GRAY)
 
         # Piirrä title
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, HEIGHT / 2 - 50))
@@ -1547,8 +1635,14 @@ def settings_menu():
     
     # Kun run on päällä-looppi
     while run:
+
         global music
         audio_toggle(music, 1)
+
+        # Soita settings menussa menu musiikkia aina kanava 1:llä (musiikkikanavalla)
+        Play_MenuMusic(1)
+
+
 
         # Piirrä taustakuva
         WIN.blit(BACKGROUND, (0,0))
