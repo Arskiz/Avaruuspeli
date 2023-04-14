@@ -1,26 +1,28 @@
 import math
-from re import T
 import pygame as game
 import os
 import sys
 import random as r
 import datetime as d;
 import json
-objektit = []
-objektit2 = []
+objektit = [] # Pelaajan ammukset lista
+objektit2 = [] # Vihollisen ammukset lista
 
 
-# Setup
-clock = game.time.Clock()
-WIDTH, HEIGHT = 1920, 1080
-game.init()
-WIN = game.display.set_mode((WIDTH, HEIGHT))
-counter, text = 2, ' '.rjust(3)
 
+clock = game.time.Clock() # Määritä kello
+WIDTH, HEIGHT = 1920, 1080 # Määritä ikkunan leveys ja korkeus
+game.init() # Initializoi peli
+WIN = game.display.set_mode((WIDTH, HEIGHT)) # Aseta ikkunan kooksi WIDTH ja HEIGHT
+
+# Määritä Score & Level muuttujat
 score = 0
 level = 0
 
+# Määritä onko pelaaja ensimmäistä kertaa painanut settings-nappia
 firstTime2 = True
+
+# Huijauskoodit
 HackStatus = False
 godMode = False
 
@@ -34,10 +36,11 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 CYAN = (0, 255, 255)
 color = BLACK
-#mainmenu
+
+# Mainmenu
 mainMenu = True
 
-##paused
+# Paused
 firstTime = True
 
 # reuna
@@ -53,20 +56,16 @@ FPS = 60
 showCounter = True
 
 # -- Aseen parametrit --|
-# ----------------------|
-nykyinenAmmo = 0  # ----|
-nykyinenLipas = 0  # ---|
-# ----------------------|
-maxAmmo = 0  # --------|
-maxLipas = 0  # ------|
+nykyinenAmmo = 0  
+nykyinenLipas = 0  
+maxAmmo = 0  
+maxLipas = 0 
 maxAmmoEnemy = 0
-infiniteAmmo = False # -|
-PLAYER_BULLET_VEL = 5  # ------|
-ENEMY_BULLET_VEL = 5 # -----|
-# ----------------------|
-gun = 2 #---------------|
-textBGColor = True  # --|
-# ----------------------|
+infiniteAmmo = False 
+PLAYER_BULLET_VEL = 5  
+ENEMY_BULLET_VEL = 5 
+gun = 2 
+textBGColor = True  
 
 
 # Pelaajan parametrit
@@ -82,17 +81,17 @@ killsUntilLevelUP = 3 # paljon tappoja tarvii kunnes level upataan?
 pelaajat = [] # lista pelaajista
 
 
-#idk
+# Idk
 reloadfont = game.font.SysFont('Consolas', 30)
 
-#äänet
+# Äänet
 nykyinenSound = "Menu"
 musicID = 1
 playerID = 2
 enemyID = 3
 music = game.mixer.Channel(1).get_volume()
 
-#vihollisten parametrit
+# Vihollisten parametrit
 enemies = []
 enemy = None
 maxEnemies = 10
@@ -116,22 +115,22 @@ try:
     with open('save.txt') as save_file:
         data = json.load(save_file)
 except:
-    print("Ei löytynyt savea.")
+    print("Ei löytynyt savea.") # Tekee uuden saven pelin päättyessä halutessaan
 
 
-# Pelaajan Rectangle
+# Pelaajan Rectangle (Määritä kuva)
 SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 50, 50
 SPACESHIP_IMAGE = game.image.load(os.path.join('Assets/Player', 'spaceship.png'))
 PLAYER = game.transform.rotate(game.transform.scale(
     SPACESHIP_IMAGE, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)), 0)
 
-# Vihollisen Rectangle
+# Vihollisen Rectangle (Määritä kuva)
 ENEMY_WIDTH, ENEMY_HEIGHT = 50, 50
 ENEMY_IMAGE = game.image.load(os.path.join('Assets/Enemy', 'enemy.png'))
 ENEMY = game.transform.rotate(game.transform.scale(
     ENEMY_IMAGE, (ENEMY_WIDTH, ENEMY_HEIGHT)), 0)
 
-# Luodit
+# Luodit (Määritä kuvat)
 BULLET_WIDTH, BULLET_HEIGHT = 10, 20
 RED_BULLET_IMG = game.image.load(
     os.path.join('Assets/Player', 'pixel_laser_red.png'))
@@ -242,7 +241,7 @@ class Ship:
         self.firerate_player = 0
         self.firerate_enemy = 0
 
-    # objektien piirto
+    # Objektien piirto
     def draw(self, window):
         window.blit(self.ship_img, (self.x, self.y))
         for objekti in objektit:
@@ -250,21 +249,21 @@ class Ship:
         for objekti2 in objektit2:
             objekti2.draw(window)
 
-    # pelaajan firerate
+    # Pelaajan firerate
     def fireratee(self):
         if self.firerate_player >= self.FIRERATE_PLAYER:
             self.firerate_player = 0
         elif self.firerate_player > 0:
             self.firerate_player += 1
 
-    # vihollisen firerate
+    # Vihollisen firerate
     def firerateee(self):
         if self.firerate_enemy >= self.FIRERATE_ENEMY:
             self.firerate_enemy = 0
         elif self.firerate_enemy > 0:
             self.firerate_enemy += 0.1
 
-    # pelaajan ammunta-funktio
+    # Pelaajan ammunta-funktio
     def playerShoot(self):
         global gun         # Käytetään globaalia muuttujaa "gun"
         global nykyinenAmmo # Käytetään globaalia muuttujaa "nykyinenAmmo"
@@ -293,7 +292,7 @@ class Ship:
                     nykyinenAmmo -=gun # Vähennetään pelaajan aseeseen käytettyjen ammusten määrä "nykyinenAmmo"-muuttujasta
             self.firerate_player = 1 # Asetetaan cooldown-tila "1"-arvoon
 
-    # vihollisen ammunta-funktio
+    # Vihollisen ammunta-funktio
     def enemyShoot(self):
         global gun         # Käytetään globaalia muuttujaa "gun"
         if self.firerate_enemy == 0: # Tarkistetaan, että ase ei ole cooldownissa ja että vihollisella on ammuksia
@@ -575,41 +574,6 @@ class Button():
             self.rect.y += 5
         WIN.blit(self.image, self.rect)
         return action
-
-class CheckBox(): # Ei toimi -> ei ole käytössä
-    def __init__(self, x, y, image, replaceImage, status=False):
-        self.status = status
-        self.clicked = False
-
-        self.image = image # kuva joka näkyy kun ei ole checked
-        self.image2 = replaceImage # checked jälkeen nkyvä kuva
-        self.oldImage = image # original joka näkyy jos kuva ei ole checked
-
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.rect2 = self.image2.get_rect(topleft=(x, y))
-    
-        self.mask = game.mask.from_surface(self.image)
-        self.mask2 = game.mask.from_surface(self.image2)
-
-    def draw(self):
-
-        # Saa hiiren lokaation
-        pos = game.mouse.get_pos()
-
-        # game.draw.rect(WIN, (255, 0, 0), self.rect, 1) -------------------- Piirtää checkboxin rectin punaisella testausta varten
-        def setValue():
-            if(self.status == False):
-                self.status = True
-                self.image = self.image2
-        if game.mouse.get_pressed()[0]:
-            if self.rect.collidepoint(pos) and self.mask.get_at((pos[0] - self.rect.x, pos[1] - self.rect.y)):
-                setValue()
-            
-                
-        # Piirrä kuva
-        WIN.blit(self.image, self.rect)
-
-        return self.status
     
 # Räjähdys - class
 class Explosion(game.sprite.Sprite):
@@ -866,7 +830,7 @@ def game_window(player):
 def rotation(self, angle):
     self.rect = game.transform.rotate(self.rect, angle)
     
-# liikkumisen händläys    
+# Liikkumisen händläys    
 def handleMovement(keys_pressed):
 
     # Määritellään julkiset muuttujat
@@ -949,7 +913,7 @@ def handleMovement(keys_pressed):
         # BOOSTING on pois päältä
         BOOSTING = False
 
-# pelaajan reload weapon
+# Pelaajan reload weapon
 def Player_Reload_Weapon():
 
     # Määritellään julkiset muuttujat
@@ -1515,8 +1479,7 @@ def main_menu():
 
         # Piirrä kello-teksti näytölle
         rectClock = update_clock().get_rect()
-        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))
-        game.display.update()        
+        WIN.blit(update_clock(), ((WIDTH - rectClock.width -(BORDERTHICKNESS * 5)), 10))     
 
         # Määritä titlen teksti
         title_label = title_font.render(' Paina "Play" aloittaaksesi... ', 1, CYAN, BLACK)
