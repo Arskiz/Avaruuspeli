@@ -111,14 +111,14 @@ rightMovement = False
 # Enkryptoi int
 def Encrypt_Int(value):
     print("Normaali value: " + str(value))
-    value = value * 868374 
+    value = value * 86824285873546363456345374 
     print("Enkryptoitu value: " + str(value))
     return int(value)
 
 # Dekryptoi int
 def Decrypt_Int(value):
     print("Enkryptoitu value: " + str(value))
-    value = value / 868374 
+    value = value / 86824285873546363456345374 
     print("Normaali value: " + str(value))
     return int(value)
 
